@@ -1,0 +1,20 @@
+[package]
+name    = "common-structs"
+version = "0.0.0"
+authors = ["Mihai Eremia <mihai@xoxno.com>"]
+edition = "2021"
+
+[lib]
+path = "src/model.rs"
+
+[dependencies.common-constants]
+path = "../constants"
+
+[dependencies.common-errors]
+path = "../errors"
+
+[dependencies.multiversx-sc]
+version = "0.64.0"
+
+[dev-dependencies]
+multiversx-sc-scenario = { version = "0.64.0" }

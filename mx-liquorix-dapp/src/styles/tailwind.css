@@ -1,0 +1,235 @@
+@import 'tailwindcss';
+
+@theme {
+  --breakpoint-xs: 30rem;
+  /* 480px */
+  --background-image-dark-theme: url('/dark-theme-bg.png');
+  --background-image-vibe-theme: url('/vibe-theme-bg.png');
+  --background-image-light-theme: url('/light-theme-bg.png');
+  --background-color-primary: var(--mvx-bg-color-primary);
+  --background-color-secondary: var(--mvx-bg-color-secondary);
+  --background-color-tertiary: var(--mvx-hover-bg-primary);
+  --background-color-accent: var(--mvx-bg-accent-color);
+  --background-color-btn-primary: var(--mvx-button-bg-primary);
+  --background-color-btn-secondary: var(--mvx-button-bg-secondary);
+  --background-color-btn-tertiary: var(--mvx-button-bg-secondary);
+  --background-color-btn-variant: var(--mvx-button-bg-variant);
+  --background-color-btn-hover: var(--mvx-hover-color-primary);
+  --background-color-logo-primary: var(--mvx-text-color-primary);
+  --background-color-icon: var(--mvx-link-color);
+  --color-primary: var(--mvx-text-color-primary);
+  --color-secondary: var(--mvx-text-color-secondary);
+  --color-tertiary: var(--mvx-text-color-tertiary);
+  --color-accent: var(--mvx-text-accent-color);
+  --color-btn-primary: var(--mvx-button-text-primary);
+  --color-btn-secondary: var(--mvx-button-text-secondary);
+  --color-link: var(--mvx-link-color);
+  --color-success: var(--mvx-success-color);
+  --color-error: var(--mvx-error-color);
+  --border-color-secondary: var(--mvx-border-color-secondary);
+  --border-color-logo: var(--mvx-text-color-primary);
+  --font-sans: 'Rajdhani', 'ui-sans-serif', 'system-ui', 'sans-serif', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-display: 'Chakra Petch', 'Rajdhani', 'sans-serif';
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+:root {
+  --mvx-slate-75: #f8f8ff;
+  --mvx-orange-500: #FF6900;
+  --mvx-orange-600: #E65100;
+  --mvx-neutral-900: #171717;
+  --mvx-neutral-800: #262626;
+  --mvx-white: #ffffff;
+  --mvx-black: #000000;
+}
+
+:root[data-mvx-theme='mvx:vibe-theme'],
+[data-mvx-theme='mvx:vibe-theme'] {
+  --mvx-bg-color-primary: var(--mvx-neutral-900);
+  --mvx-bg-color-secondary: var(--mvx-neutral-800);
+  --mvx-bg-accent-color: var(--mvx-orange-500);
+  --mvx-bg-accent-variant-color: var(--mvx-orange-600);
+  --mvx-hover-color-primary: var(--mvx-orange-600);
+  --mvx-text-color-primary: var(--mvx-white);
+  --mvx-text-color-secondary: var(--mvx-slate-75);
+  --mvx-text-color-tertiary: var(--mvx-slate-75);
+  --mvx-text-accent-color: var(--mvx-orange-500);
+  --mvx-link-color: var(--mvx-orange-500);
+  --mvx-label-color: var(--mvx-orange-500);
+  --mvx-icon-bg: var(--mvx-neutral-800);
+  --mvx-button-bg-primary: var(--mvx-orange-500);
+  --mvx-button-bg-secondary: var(--mvx-neutral-800);
+  --mvx-button-bg-variant: var(--mvx-neutral-800);
+  --mvx-button-text-primary: var(--mvx-white);
+  --mvx-button-text-secondary: var(--mvx-white);
+  --mvx-border-color-secondary: var(--mvx-neutral-800);
+  --mvx-scrollbar-thumb: var(--mvx-orange-500);
+}
+
+/* Overrides for SDK Dapp UI Connect Modal */
+
+/* 
+   NUCLEAR OPTION for Modal Colors. 
+   We are not asking nicely anymore.
+*/
+
+/* 1. Force all SVG elements in the modal to Orange */
+.dapp-unlock-page svg,
+.dapp-unlock-page svg *,
+.dapp-modal-dialog-content svg,
+.dapp-modal-dialog-content svg *,
+[id*="unlock"] svg,
+[id*="unlock"] svg * {
+  fill: #FF6900 !important;
+  stroke: #FF6900 !important;
+  color: #FF6900 !important;
+}
+
+/* 2. Target specific teal fills with attribute selectors (case insensitive) */
+[fill="#23F7DD" i],
+[fill="#23f7dd" i],
+[fill="#00F7D7" i],
+[fill="#00f7d7" i] {
+  fill: #FF6900 !important;
+}
+
+[stroke="#23F7DD" i],
+[stroke="#23f7dd" i],
+[stroke="#00F7D7" i],
+[stroke="#00f7d7" i] {
+  stroke: #FF6900 !important;
+}
+
+/* 3. Force background color on icon wrappers */
+.dapp-icon-wrapper,
+[class*="icon-wrapper"],
+[class*="dapp-icon-bg"] {
+  background-color: #262626 !important;
+  /* Neutral dark background */
+}
+
+/* 4. If the teal is coming from an image filter, rotate it */
+/* This rotates the standard MultiversX Teal (~170deg) to Orange (~30deg) */
+.dapp-unlock-page img,
+.dapp-modal-dialog-content img {
+  /* Only apply to icons that look teal */
+  filter: hue-rotate(220deg) saturate(300%) !important;
+}
+
+/* Exclude images that shouldn't be rotated if needed, but for now force format */
+
+/* 5. Specific class overrides found in SDK Dapp */
+.dapp-core-component-icon-wrapper,
+.dapp-login-button .dapp-icon-wrapper {
+  background-color: #FF6900 !important;
+  color: #171717 !important;
+  /* Text on orange bg */
+}
+
+/* BluetoothKey Animations & Styles */
+@keyframes bgGlow {
+  0% {
+    opacity: 0;
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes bgGlow2 {
+  0% {
+    opacity: 0;
+  }
+
+  40% {
+    opacity: 1;
+  }
+
+  70%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes ledTurnOff {
+
+  30%,
+  60% {
+    background-color: #FF6900;
+    box-shadow: 0 -10px 35px 17px rgba(255, 105, 0, 0.6),
+      inset 0 1px 2px 0px white,
+      0 0 0px 3px rgb(0 0 0 / 60%),
+      0 0 2px 4px rgba(152, 119, 0, 0.3);
+  }
+
+  60.1%,
+  65% {
+    background-color: black;
+    box-shadow: none;
+  }
+
+  65.1%,
+  70% {
+    background-color: #FF6900;
+    box-shadow: 0 -10px 35px 17px rgba(255, 105, 0, 0.6),
+      inset 0 1px 2px 0px white;
+  }
+
+  70.1%,
+  100% {
+    background-color: black;
+    box-shadow: none;
+  }
+}
+
+@keyframes symbolPath {
+  0% {
+    stroke-dashoffset: 100;
+  }
+
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+.symbol-path {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+
+.symbol-path-glow {
+  filter: drop-shadow(0 0 5px #FF6900);
+  opacity: 0.8;
+}
+
+@keyframes symbolCircle {
+  0% {
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

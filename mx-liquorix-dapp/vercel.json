@@ -1,0 +1,17 @@
+{
+    "outputDirectory": "build",
+    "rewrites": [
+        {
+            "source": "/api-xoxno-mainnet/(.*)",
+            "destination": "https://api.xoxno.com/$1"
+        },
+        {
+            "source": "/api-xoxno/(.*)",
+            "destination": "https://devnet-api.xoxno.com/$1"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}

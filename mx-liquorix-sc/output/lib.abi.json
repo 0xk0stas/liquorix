@@ -1,0 +1,1179 @@
+{
+    "buildInfo": {
+        "rustc": {
+            "version": "1.92.0",
+            "commitHash": "ded5c06cf21d2b93bffd5d884aa6e96934ee4234",
+            "commitDate": "2025-12-08",
+            "channel": "Stable",
+            "host": "x86_64-unknown-linux-gnu",
+            "short": "rustc 1.92.0 (ded5c06cf 2025-12-08)",
+            "llvmVersion": "21.1"
+        },
+        "contractCrate": {
+            "name": "lib",
+            "version": "0.0.1"
+        },
+        "framework": {
+            "name": "multiversx-sc",
+            "version": "0.64.0"
+        }
+    },
+    "docs": [
+        "Main smart contract trait that combines all module functionalities.",
+        "",
+        "This contract enables users to participate in leveraged liquid staking",
+        "by depositing EGLD or xEGLD tokens."
+    ],
+    "name": "Liquorix",
+    "constructor": {
+        "docs": [
+            "Initializes the smart contract with required configuration.",
+            "",
+            "# Arguments",
+            "- `supplied_token` - Token identifier for collateral (e.g., xEGLD)",
+            "- `borrowed_token` - Token identifier for borrowing (e.g., EGLD)",
+            "- `lending_position_token` - NFT token for tracking lending positions",
+            "- `liquid_staking_address` - Address of the XOXNO liquid staking contract",
+            "- `lending_address` - Address of the XOXNO lending controller contract",
+            "- `bot_address` - Address authorized to execute leverage operations"
+        ],
+        "inputs": [
+            {
+                "name": "supplied_token",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "borrowed_token",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "lending_position_token",
+                "type": "TokenIdentifier"
+            },
+            {
+                "name": "liquid_staking_address",
+                "type": "Address"
+            },
+            {
+                "name": "lending_address",
+                "type": "Address"
+            },
+            {
+                "name": "swap_router_address",
+                "type": "Address"
+            },
+            {
+                "name": "bot_address",
+                "type": "Address"
+            }
+        ],
+        "outputs": []
+    },
+    "upgradeConstructor": {
+        "docs": [
+            "Handles contract upgrade. Called when the contract is upgraded."
+        ],
+        "inputs": [],
+        "outputs": []
+    },
+    "endpoints": [
+        {
+            "docs": [
+                "Issues the share token NFT for the vault.",
+                "",
+                "Creates a MetaFungible token used to represent user shares.",
+                "",
+                "# Arguments",
+                "- `display_name` - Human-readable name for the token",
+                "- `ticker` - Short ticker symbol for the token",
+                "",
+                "# Payment",
+                "Requires EGLD payment for token issuance fee."
+            ],
+            "name": "issueShareToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "payableInTokens": [
+                "EGLD"
+            ],
+            "inputs": [
+                {
+                    "name": "display_name",
+                    "type": "bytes"
+                },
+                {
+                    "name": "ticker",
+                    "type": "bytes"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the token used as collateral (e.g., xEGLD)."
+            ],
+            "name": "setSuppliedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the token to be borrowed (e.g., EGLD)."
+            ],
+            "name": "setBorrowedToken",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the XOXNO liquid staking contract address."
+            ],
+            "name": "setLiquidStakingAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the XOXNO lending controller contract address."
+            ],
+            "name": "setLendingAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the XOXNO swap router contract address."
+            ],
+            "name": "setSwapRouterAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the authorized bot address for leverage operations."
+            ],
+            "name": "setBotAddress",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Sets the bot LTV threshold parameters.",
+                "",
+                "# Arguments",
+                "- `safe_threshold_bps` - Safe threshold in BPS (e.g., 4000 = 40%). Target LTV ratio.",
+                "- `inaction_zone_bps` - Inaction zone in BPS around safe threshold (e.g., 500 = 5%).",
+                "",
+                "# Validation",
+                "- `safe_threshold_bps` must be <= 10000 (100%)",
+                "- `safe_threshold_bps + inaction_zone_bps` must be <= 10000 (upper bound can't exceed 100%)",
+                "- `inaction_zone_bps` must be < `safe_threshold_bps` (lower bound can't go negative)"
+            ],
+            "name": "setRiskThresholds",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "safe_threshold_bps",
+                    "type": "u64"
+                },
+                {
+                    "name": "inaction_zone_bps",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Returns complete system information as a `SystemInfo` struct."
+            ],
+            "name": "getSystemInfo",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "SystemInfo"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Returns system info as a MultiValue tuple for ABI compatibility."
+            ],
+            "name": "getSystemInfoMultiValue",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "bool"
+                },
+                {
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "type": "u64"
+                },
+                {
+                    "type": "bool"
+                },
+                {
+                    "type": "bool"
+                },
+                {
+                    "type": "Address"
+                },
+                {
+                    "type": "Address"
+                },
+                {
+                    "type": "Address"
+                },
+                {
+                    "type": "Address"
+                },
+                {
+                    "type": "variadic<Address>",
+                    "multi_result": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Adds one or more addresses as admins.",
+                "",
+                "# Access Control",
+                "Only callable by the contract owner.",
+                "",
+                "# Arguments",
+                "- `addresses` - List of addresses to add as admins"
+            ],
+            "name": "addAdmins",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "addresses",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Removes one or more addresses from admins.",
+                "",
+                "# Access Control",
+                "Only callable by the contract owner.",
+                "",
+                "# Arguments",
+                "- `addresses` - List of addresses to remove from admins"
+            ],
+            "name": "removeAdmins",
+            "onlyOwner": true,
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "addresses",
+                    "type": "variadic<Address>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Pauses the contract.",
+                "",
+                "# Access Control",
+                "Only callable by an admin.",
+                "",
+                "# Panics",
+                "Panics if the contract is already paused."
+            ],
+            "name": "pause",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Unpauses the contract.",
+                "",
+                "# Access Control",
+                "Only callable by an admin.",
+                "",
+                "# Panics",
+                "Panics if the contract is not paused."
+            ],
+            "name": "unpause",
+            "mutability": "mutable",
+            "inputs": [],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Deposits EGLD or xEGLD tokens into the vault.",
+                "",
+                "When EGLD is deposited, it is first delegated to liquid staking to receive xEGLD.",
+                "The xEGLD is then supplied to the lending protocol as collateral.",
+                "The user receives share tokens proportional to their contribution.",
+                "",
+                "## Share Calculation",
+                "- First deposit: shares = deposit_amount (1:1 ratio)",
+                "- Subsequent deposits: `shares = (total_shares * deposit_egld_value) / vault_equity`",
+                "  where `vault_equity = total_collateral_in_egld - total_debt_in_egld`",
+                "",
+                "## Payment",
+                "- EGLD: Will be converted to xEGLD via liquid staking",
+                "- xEGLD (supplied_token): Will be directly supplied to lending",
+                "",
+                "## Returns",
+                "Share token (DynamicMeta NFT) representing the user's share of the vault.",
+                "The NFT attributes store the snapshot of total shares and supplied amount",
+                "at the time of deposit for PnL calculations.",
+                "",
+                "## Panics",
+                "- If the contract is paused",
+                "- If the deposit amount is zero",
+                "- If the token is not EGLD or the configured supplied_token (xEGLD)"
+            ],
+            "name": "deposit",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "EsdtTokenPayment"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Withdraws tokens from the vault by burning share tokens.",
+                "",
+                "Calculates the proportional share of collateral and debt based on",
+                "the share tokens provided. If the vault has outstanding debt, the user's",
+                "share of debt is first repaid using their collateral share, and then",
+                "the remaining collateral is withdrawn and transferred to the caller.",
+                "",
+                "## Withdrawal Logic",
+                "1. Calculate user's share of total collateral",
+                "2. Calculate user's share of total debt (if any)",
+                "3. If debt exists: repay debt using collateral via swap",
+                "4. Withdraw remaining collateral and transfer to user",
+                "",
+                "# Arguments",
+                "- `swap_steps` - Optional swap route arguments for repaying debt with collateral.",
+                "  Required when the vault has outstanding debt.",
+                "",
+                "# Payment",
+                "Share token to be burned for withdrawal.",
+                "",
+                "# Transfers",
+                "Sends the withdrawn collateral tokens (xEGLD) directly to the caller.",
+                "",
+                "# Panics",
+                "- Panics if the contract is paused",
+                "- Panics if the share token payment is invalid",
+                "- Panics if the calculated withdrawal amount is zero",
+                "- Panics if collateral is insufficient to cover the debt share"
+            ],
+            "name": "withdraw",
+            "mutability": "mutable",
+            "payableInTokens": [
+                "*"
+            ],
+            "inputs": [
+                {
+                    "name": "swap_steps",
+                    "type": "optional<List<bytes>>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Returns the lending info for the vault's position as a LendingInfo struct."
+            ],
+            "name": "getLendingInfo",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "LendingInfo"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Returns the lending info for the vault's position as a MultiValue type."
+            ],
+            "name": "getLendingInfoMultiValue",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "bool"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Returns the Total Value Locked (TVL) in USD.",
+                "",
+                "TVL = (total_supplied * supplied_token_price_in_usd) - (total_borrowed * borrowed_token_price_in_usd)"
+            ],
+            "name": "getTvl",
+            "mutability": "readonly",
+            "inputs": [],
+            "outputs": [
+                {
+                    "type": "ManagedDecimal<usize>"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Returns the PnL (Profit and Loss) for a list of share token positions.",
+                "",
+                "Given an address and a list of share token nonces, calculates:",
+                "- For each token: share_initial_value and share_current_value",
+                "- Returns tuple of (pnl, pnl_percentage) where:",
+                "  - pnl = total_share_current_value - total_share_initial_value",
+                "  - pnl_percentage = pnl * 100 / total_share_initial_value",
+                "",
+                "# Validation",
+                "- Skips any share tokens that do not have a balance for the given address",
+                "or the address is from another shard.",
+                "",
+                "# Arguments",
+                "- `address` - The address holding the share tokens",
+                "- `nonces` - List of share token nonces to calculate PnL for",
+                "",
+                "# Returns",
+                "The total PnL as a ManagedDecimal."
+            ],
+            "name": "getPositionsPnl",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address"
+                },
+                {
+                    "name": "nonces",
+                    "type": "variadic<u64>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "ManagedDecimal<usize>"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Increases the leverage of the vault position.",
+                "",
+                "This endpoint borrows additional tokens and supplies them as collateral",
+                "to increase the overall yield.",
+                "",
+                "# Arguments",
+                "- `amount_to_borrow` - Amount of the borrowed token to borrow",
+                "- `decimals` - Number of decimals for the borrowed token",
+                "- `swap_args` - Arguments for the swap operation (e.g. USDC -> EGLD)",
+                "",
+                "# Access Control",
+                "Only callable by the authorized bot address."
+            ],
+            "name": "leverage",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "borrowed_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "decimals",
+                    "type": "u32"
+                },
+                {
+                    "name": "swap_args",
+                    "type": "List<bytes>"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Decreases the leverage of the vault position.",
+                "",
+                "This endpoint repays borrowed tokens using collateral to reduce risk exposure.",
+                "Uses the lending protocol's built-in swap functionality to convert collateral",
+                "to borrowed token and repay debt in a single transaction.",
+                "",
+                "# Arguments",
+                "- `collateral_amount` - Amount of the collateral token to use for repayment",
+                "- `swap_steps` - Steps for the internal swap operation (e.g. xEGLD -> USDC)",
+                "",
+                "# Access Control",
+                "Only callable by the authorized bot address."
+            ],
+            "name": "deleverage",
+            "mutability": "mutable",
+            "inputs": [
+                {
+                    "name": "collateral_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "swap_steps",
+                    "type": "List<bytes>"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "docs": [
+                "Returns information for the bot to decide whether to leverage, deleverage, or do nothing.",
+                "",
+                "Decision logic based on LTV ratio (LTV = debt/collateral):",
+                "- Safe threshold: 40% (4000 BPS) - the target ratio",
+                "- Inaction zone: 35%-45% (safe ± 5%)",
+                "- If ltv_ratio > 45%: Deleverage to 40% (safe threshold)",
+                "- If ltv_ratio in [35%, 45%]: Do nothing",
+                "- If ltv_ratio < 35%: Leverage to 40% (safe threshold)",
+                "",
+                "# Arguments",
+                "- `opt_target_ltv_ratio_bps` - Optional target LTV ratio in BPS (basis points).",
+                "  If not provided, defaults to the safe threshold.",
+                "",
+                "The target LTV ratio must be within the inaction zone bounds.",
+                "It allows the bot to adjust its target dynamically while ensuring safety.",
+                "",
+                "# Returns",
+                "BotInfo containing the action to take and amounts to adjust."
+            ],
+            "name": "getBotInfo",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "opt_target_ltv_ratio_bps",
+                    "type": "optional<BigUint>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BotInfo"
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Returns the BotInfo as a Multi Value."
+            ],
+            "name": "getBotInfoMultiValue",
+            "mutability": "readonly",
+            "inputs": [
+                {
+                    "name": "opt_target_ltv_ratio_bps",
+                    "type": "optional<BigUint>",
+                    "multi_arg": true
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "BotAction"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "type": "bool"
+                }
+            ]
+        }
+    ],
+    "events": [
+        {
+            "docs": [
+                "Emitted when the share token is set."
+            ],
+            "identifier": "shareTokenSet",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the supplied token is set."
+            ],
+            "identifier": "SuppliedTokenSet",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the borrowed token is set."
+            ],
+            "identifier": "borrowedTokenSet",
+            "inputs": [
+                {
+                    "name": "token",
+                    "type": "TokenIdentifier",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the liquid staking address is set."
+            ],
+            "identifier": "liquidStakingAddressSet",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the lending address is set."
+            ],
+            "identifier": "lendingAddressSet",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the swap router address is set."
+            ],
+            "identifier": "swapRouterAddressSet",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the bot address is set."
+            ],
+            "identifier": "botAddressSet",
+            "inputs": [
+                {
+                    "name": "address",
+                    "type": "Address",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the lending position nonce is set."
+            ],
+            "identifier": "lendingPositionNonceSet",
+            "inputs": [
+                {
+                    "name": "nonce",
+                    "type": "u64",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the risk thresholds are set."
+            ],
+            "identifier": "riskThresholdsSet",
+            "inputs": [
+                {
+                    "name": "safe_threshold_bps",
+                    "type": "u64",
+                    "indexed": true
+                },
+                {
+                    "name": "inaction_zone_bps",
+                    "type": "u64",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when admins are added."
+            ],
+            "identifier": "adminsAdded",
+            "inputs": [
+                {
+                    "name": "admins",
+                    "type": "variadic<Address>",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when admins are removed."
+            ],
+            "identifier": "adminsRemoved",
+            "inputs": [
+                {
+                    "name": "admins",
+                    "type": "variadic<Address>",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when the contract is paused."
+            ],
+            "identifier": "paused",
+            "inputs": []
+        },
+        {
+            "docs": [
+                "Emitted when the contract is unpaused."
+            ],
+            "identifier": "unpaused",
+            "inputs": []
+        },
+        {
+            "docs": [
+                "Emitted when a deposit is made.",
+                "",
+                "# Indexed Parameters",
+                "- `supplied_amount` - Amount of tokens supplied",
+                "- `share_returned` - Amount of share tokens minted"
+            ],
+            "identifier": "deposit",
+            "inputs": [
+                {
+                    "name": "supplied_amount",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                },
+                {
+                    "name": "share_returned",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Emitted when a withdrawal is made.",
+                "",
+                "# Indexed Parameters",
+                "- `withdrawn_amount` - Amount of tokens withdrawn",
+                "- `share_burned` - Amount of share tokens burned"
+            ],
+            "identifier": "withdraw",
+            "inputs": [
+                {
+                    "name": "withdrawn_amount",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                },
+                {
+                    "name": "share_burned",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                }
+            ]
+        },
+        {
+            "docs": [
+                "Event emitted when a deleverage operation is executed."
+            ],
+            "identifier": "deleverage",
+            "inputs": [
+                {
+                    "name": "collateral_amount",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                },
+                {
+                    "name": "collateral_in_egld",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                },
+                {
+                    "name": "new_debt_in_egld",
+                    "type": "ManagedDecimal<usize>",
+                    "indexed": true
+                }
+            ]
+        }
+    ],
+    "esdtAttributes": [],
+    "hasCallback": true,
+    "types": {
+        "BotAction": {
+            "type": "enum",
+            "docs": [
+                "Enum representing the action the bot should take.",
+                "",
+                "Based on the current LTV ratio (LTV = debt/collateral),",
+                "the bot decides whether to leverage, deleverage, or do nothing."
+            ],
+            "variants": [
+                {
+                    "docs": [
+                        "No action needed - LTV ratio is within safe bounds."
+                    ],
+                    "name": "Inaction",
+                    "discriminant": 0
+                },
+                {
+                    "docs": [
+                        "Increase leverage by borrowing more and supplying as collateral."
+                    ],
+                    "name": "Leverage",
+                    "discriminant": 1
+                },
+                {
+                    "docs": [
+                        "Decrease leverage by repaying debt with collateral."
+                    ],
+                    "name": "Deleverage",
+                    "discriminant": 2
+                }
+            ]
+        },
+        "BotInfo": {
+            "type": "struct",
+            "docs": [
+                "Contains information for the bot to make leverage/deleverage decisions.",
+                "",
+                "LTV ratio thresholds (configurable, defaults shown):",
+                "- Safe threshold: 40% (4000 BPS) - the target ratio",
+                "- Inaction zone: 35%-45% (safe ± 5% = ± 500 BPS)",
+                "",
+                "Decision logic:",
+                "- If ltv_ratio > safe + inaction_zone (45%): Deleverage to safe threshold (40%)",
+                "- If ltv_ratio in [safe - inaction_zone, safe + inaction_zone] (35%-45%): Do nothing",
+                "- If ltv_ratio < safe - inaction_zone (35%): Leverage to safe threshold (40%)"
+            ],
+            "fields": [
+                {
+                    "name": "suggested_action",
+                    "type": "BotAction"
+                },
+                {
+                    "name": "current_ltv_ratio_bps",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "safe_threshold_bps_md",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "inaction_zone_bps",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "adjustment_amount_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "total_collateral_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "total_debt_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "supplied_token_price_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "borrowed_token_price_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "can_be_liquidated",
+                    "type": "bool"
+                }
+            ]
+        },
+        "EsdtTokenPayment": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "token_identifier",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                }
+            ]
+        },
+        "LendingInfo": {
+            "type": "struct",
+            "docs": [
+                "Contains complete information about the vault's lending position.",
+                "",
+                "Used by views to return all relevant lending position metrics.",
+                "Specifically, the following useful data can be derived:",
+                "",
+                "- Share token price in EGLD:",
+                "  `share_token_price_in_egld = (total_supplied_in_egld - total_debt_in_egld) / total_shares`",
+                "- Share token price in USD:",
+                "  `share_token_price_in_usd = share_token_price_in_egld * egld_price_in_usd`",
+                "- Total supplied value in USD:",
+                "  `total_supplied_in_usd = total_supplied * supplied_token_price_in_usd`",
+                "- Total borrowed value in USD:",
+                "  `total_borrowed_in_usd = total_borrowed * borrowed_token_price_in_usd`",
+                "- Equity value in EGLD:",
+                "  `equity_in_egld = total_supplied_in_egld - total_debt_in_egld`",
+                "- Equity value in USD:",
+                "  `equity_in_usd = equity_in_egld * egld_price_in_usd`",
+                "- Loan-to-Value (LTV or Risk) ratio:",
+                "  `ltv_ratio = total_debt_in_egld / total_supply_in_egld`"
+            ],
+            "fields": [
+                {
+                    "name": "total_supplied",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "supplied_token_price_in_usd",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "total_supply_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "total_borrowed",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "borrowed_token_price_in_usd",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "total_debt_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "egld_price_in_usd",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "health_factor",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "can_be_liquidated",
+                    "type": "bool"
+                },
+                {
+                    "name": "liquidation_collateral_available_in_egld",
+                    "type": "ManagedDecimal<usize>"
+                }
+            ]
+        },
+        "SystemInfo": {
+            "type": "struct",
+            "docs": [
+                "Contains complete system state information.",
+                "",
+                "Used by views to return all relevant contract configuration and state."
+            ],
+            "fields": [
+                {
+                    "name": "paused",
+                    "type": "bool"
+                },
+                {
+                    "name": "share_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "total_shares",
+                    "type": "ManagedDecimal<usize>"
+                },
+                {
+                    "name": "supplied_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "borrowed_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "liquid_staking_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "liquid_staking_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "has_collateral",
+                    "type": "bool"
+                },
+                {
+                    "name": "has_debt",
+                    "type": "bool"
+                },
+                {
+                    "name": "liquid_staking_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "lending_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "swap_router",
+                    "type": "Address"
+                },
+                {
+                    "name": "bot_address",
+                    "type": "Address"
+                },
+                {
+                    "name": "admins",
+                    "type": "List<Address>"
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "devnet": [
+        {
+            "address": "erd1qqqqqqqqqqqqqpgqsdj45ea34pw370g2h57w9wnqkmnvlxj9u7zshjwcjn",
+            "label": "SC"
+        },
+        {
+            "address": "erd1qqqqqqqqqqqqqpgq3nryh2uxnktf8whcvhhshktwfthl2ywju7zslwkvkc",
+            "label": "T"
+        }
+    ],
+    "mainnet": [
+        {
+            "address": "erd1qqqqqqqqqqqqqpgqzxs5jqkwp9mh3744h2ly9dw050tu5ad0u7zsjqmrmg",
+            "label": "SC"
+        }
+    ]
+}
