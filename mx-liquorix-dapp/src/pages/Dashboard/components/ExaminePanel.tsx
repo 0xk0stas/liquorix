@@ -58,16 +58,24 @@ export const ExaminePanel = () => {
             date.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
     };
 
+    const ALLOWED_ACTIONS = ['deposit', 'withdraw', 'leverage', 'deleverage'];
+
     const getActionType = (tx: any) => {
         const data = tx.data ? atob(tx.data) : "";
         if (data.startsWith("deposit")) return "Deposit";
         if (data.startsWith("withdraw")) return "Withdraw";
-        if (data.startsWith("borrow")) return "Borrow";
-        if (data.startsWith("repay")) return "Repay";
+        if (data.startsWith("leverage")) return "Leverage";
+        if (data.startsWith("deleverage")) return "Deleverage";
         // Check SC results or other indicators if needed for complexity, 
         // strictly for simple display:
         return tx.function || "Transaction";
     };
+
+    // Filter transactions to only show allowed action types
+    const filteredTransactions = transactions.filter((tx: any) => {
+        const action = getActionType(tx).toLowerCase();
+        return ALLOWED_ACTIONS.includes(action);
+    });
 
     // Calculate LTV for the progress bar
     const supply = lendingInfo ? parseFloat(lendingInfo.total_supply_in_egld) : 0;
@@ -254,8 +262,8 @@ export const ExaminePanel = () => {
                 </div>
 
                 <div className="space-y-4">
-                    {transactions.length > 0 ? (
-                        transactions.map((tx: any) => {
+                    {filteredTransactions.length > 0 ? (
+                        filteredTransactions.map((tx: any) => {
                             const action = getActionType(tx);
                             const isDeposit = action.toLowerCase().includes('deposit');
 
