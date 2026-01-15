@@ -16,6 +16,7 @@
     "@multiversx/sdk-dapp-ui": "^0.x",
     "@multiversx/sdk-dapp-utils": "^3.x",
     "@radix-ui/react-slot": "^1.2.4",
+    "@vercel/analytics": "^1.6.1",
     "axios": "1.10.0",
     "bignumber.js": "^9.x",
     "class-variance-authority": "^0.7.1",
